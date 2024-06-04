@@ -6,11 +6,11 @@ from users.serializers import UserSerializer
 from users.models import User
 
 
-class UserCreate(CreateAPIView):
+class UserCreateAPIView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-class UserListAPIView(ListAPIView):
+class UserListAPIViewAPIView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
