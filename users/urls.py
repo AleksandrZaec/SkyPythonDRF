@@ -1,6 +1,10 @@
 from django.urls import path
-from users.views import UserProfileUpdateAPIView, UserCreateAPIView, UserListAPIViewAPIView, UserRetrieveAPIView, \
-    UserUpdateAPIView, UserDestroyAPIView
+
+from materials.apps import MaterialsConfig
+from users.views import UserProfileUpdateAPIView, UserCreateAPIView, UserListAPIViewAPIView, UserRetrieveAPIView, UserUpdateAPIView, UserDestroyAPIView
+from users.apps import UsersConfig
+
+app_name = UsersConfig.name
 
 urlpatterns = [
     path('user/create/', UserCreateAPIView.as_view(), name='user_create'),

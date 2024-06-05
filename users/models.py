@@ -4,6 +4,7 @@ from django.db import models
 
 NULLABLE = {'blank': True, 'null': True}
 
+
 class User(AbstractUser):
     username = None
     first_name = models.CharField(max_length=50, verbose_name='имя')
@@ -15,7 +16,6 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
-
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
