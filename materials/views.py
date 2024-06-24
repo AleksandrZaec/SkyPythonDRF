@@ -1,3 +1,5 @@
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -73,9 +75,36 @@ class LessonDestroyAPIView(DestroyAPIView):
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
 
 
+post_request_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    required=['course_id'],
+    properties={
+        'course_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the course')
+    }
+)
+
+post_response_schema = openapi.Response(
+    description='Subscription status message',
+    examples={
+        'application/json': {'message': 'Подписка добавлена'}
+    }
+)
+
+# Схема для метода GET
+get_response_schema = openapi.Response(
+    description='List of subscriptions',
+    schema=SubscriptionSerializer(many=True)
+)
+
+
 class SubscriptionAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Create or delete a subscription to a course.",
+        request_body=post_request_schema,
+        responses={200: post_response_schema}
+    )
     def post(self, request, *args, **kwargs):
         user = request.user
         course_id = request.data.get('course_id')
@@ -90,6 +119,10 @@ class SubscriptionAPIView(APIView):
 
         return Response({"message": message})
 
+    @swagger_auto_schema(
+        operation_description="Retrieve the list of subscriptions for the authenticated user.",
+        responses={200: get_response_schema}
+    )
     def get(self, request, *args, **kwargs):
         user = request.user
         if user.is_staff:
@@ -98,3 +131,4 @@ class SubscriptionAPIView(APIView):
             subscriptions = Subscription.objects.filter(user=user)
         serializer = SubscriptionSerializer(subscriptions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+

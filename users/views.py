@@ -1,5 +1,7 @@
 import stripe
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView, \
     RetrieveUpdateAPIView
@@ -91,6 +93,13 @@ class PaymentCreateAPIView(CreateAPIView):
     serializer_class = PaymentSerializer
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Create a payment and get a Stripe payment link.",
+        responses={201: openapi.Response(
+            description="Payment link",
+            examples={'application/json': {'payment_link': 'https://stripe.com/payment_link'}}
+        )}
+    )
     def perform_create(self, serializer):
         payment = serializer.save(user=self.request.user)
 
