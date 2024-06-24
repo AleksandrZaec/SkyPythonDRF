@@ -1,14 +1,20 @@
+import stripe
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView, DestroyAPIView, \
     RetrieveUpdateAPIView
 from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from materials.models import Course
 from users.serializers import UserSerializer, PaymentSerializer
 from users.models import User, Payment
 from .filters import PaymentFilter
 from .permissions import IsModeratorOrOwner
+from .services import convert_rub_to_dollars, create_stripe_price, create_stripe_product, \
+    create_stripe_session
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -78,3 +84,35 @@ class PaymentListView(ListAPIView):
         else:
             # Обычные пользователи видят только свои платежи
             return Payment.objects.filter(user=self.request.user)
+
+
+class PaymentCreateAPIView(CreateAPIView):
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        payment = serializer.save(user=self.request.user)
+
+        product_id = create_stripe_product(
+            name=f"Payment for {payment.paid_course or payment.paid_lesson}",
+            description="Course or Lesson Payment"
+        )
+
+        price_id = create_stripe_price(product_id, payment.amount)
+        session_id, payment_link = create_stripe_session(price_id)
+
+        # Обновление информации о платеже
+        payment.stripe_session_id = session_id
+        payment.link = payment_link
+        payment.save()
+
+        return Response({'payment_link': payment_link}, status=status.HTTP_201_CREATED)
+
+
+class PaymentStatusAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, session_id):
+        session = stripe.checkout.Session.retrieve(session_id)
+        return Response({'status': session.payment_status})

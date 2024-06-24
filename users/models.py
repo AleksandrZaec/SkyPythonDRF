@@ -37,12 +37,27 @@ class Payment(models.Model):
         (BANK_TRANSFER, 'Перевод на счет'),
     ]
 
+    PENDING = 'pending'
+    COMPLETED = 'completed'
+    FAILED = 'failed'
+    PAYMENT_STATUS_CHOICES = [
+        (PENDING, 'Ожидание'),
+        (COMPLETED, 'Завершен'),
+        (FAILED, 'Неудача'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь')
     payment_date = models.DateField(verbose_name='дата оплаты')
-    paid_course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True, verbose_name='оплаченный курс')
-    paid_lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True, verbose_name='отдельно оплаченный урок')
+    paid_course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True,
+                                    verbose_name='оплаченный курс')
+    paid_lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, null=True, blank=True,
+                                    verbose_name='отдельно оплаченный урок')
     amount = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='сумма оплаты')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, verbose_name='способ оплаты')
+    stripe_session_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='ID сессии Stripe')
+    link = models.URLField(max_length=400, verbose_name='ссылка на оплату', **NULLABLE)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default=PENDING,
+                              verbose_name='статус оплаты')
 
     def __str__(self):
         return f"{self.user} - {self.amount} ({self.payment_date})"
