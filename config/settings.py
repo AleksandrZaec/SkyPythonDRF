@@ -40,13 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_celery_beat',
 
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
     'drf_yasg',
     "corsheaders",
+    'django_celery_beat',
 
     'users',
     'materials',
@@ -173,7 +173,6 @@ CELERY_TIMEZONE = "Europe/Moscow"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
-
 # настройки для отпраки сообщений
 EMAIL_HOST = 'smtp.mailing.ru'
 EMAIL_PORT = 2525
@@ -183,6 +182,3 @@ EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 SERVER_EMAIL = EMAIL_HOST_USER
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-
-
