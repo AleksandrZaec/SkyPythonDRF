@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -12,6 +15,7 @@ from materials.paginators import MaterialsPaginator
 from materials.permissions import IsModeratorOrReadOnly, IsOwnerOrModerator, IsOwnerOrReadOnly
 from materials.serializers import CourseSerializer, LessonSerializer, SubscriptionSerializer
 from materials.models import Course, Lesson, Subscription
+from materials.services import CourseService
 
 
 class CourseViewSet(ModelViewSet):
@@ -30,6 +34,26 @@ class CourseViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        # Вызов сервиса для отправки уведомлений
+        CourseService.notify_subscribers(instance)
+
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return self.update(request, *args, **kwargs)
 
 
 # class CourseViewSet(ModelViewSet):

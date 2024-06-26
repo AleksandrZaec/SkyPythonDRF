@@ -14,6 +14,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=20, verbose_name='Телефон', **NULLABLE)
     city = models.CharField(max_length=50, verbose_name='город', **NULLABLE)
     avatar = models.ImageField(upload_to='users/', verbose_name='Аватар', **NULLABLE)
+    telegram = models.CharField(max_length=50, verbose_name='Телеграм ник', **NULLABLE)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
