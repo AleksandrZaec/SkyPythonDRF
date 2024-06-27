@@ -1,9 +1,17 @@
 from datetime import timedelta
+from venv import logger
+
 from celery import shared_task
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.utils.timezone import now
-from users.models import User
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+DEFAULT_FROM_EMAIL_ADDRESS = os.getenv('DEFAULT_FROM_EMAIL_ADDRESS', EMAIL_HOST_USER)
 
 
 @shared_task
@@ -11,7 +19,7 @@ def send_course_update_email(user_email, course_title):
     send_mail(
         'Course Updated',
         f'The course "{course_title}" has been updated.',
-        'zaecaam95@mail.ru',
+        DEFAULT_FROM_EMAIL_ADDRESS,
         [user_email],
         fail_silently=False,
     )
